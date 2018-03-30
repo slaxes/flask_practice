@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+
+<head>
+    <meta charset="UTF-8">
+    <title>贝贝组测试</title>
+    <link rel="stylesheet" type="text/css" href="./static/stylesheets/index.css">
+</head>
+
+<body>
+    <div class="add">测试</div>
+    <div class="add">1:正确，2:错误，3:未知</div>
+    <div class="add" id="num"></div>
+    <ul class="container" id="ul1">
+        <li class="inf-list" id="result">
+            <span title="name">query</span>
+            <span title="email">main-question1</span>
+            <span title="phone">main-question2</span>
+        </li>
+    </ul>
+    <button id="btn" type="button" style="width:80px;height:40px;position: absolute;left: 50%;margin-left: -25px;">提交按钮</button>
+    <script>
+        window.onload = function(){
+            var xhr;
+            if(window.XMLHttpRequest){
+                xhr = new XMLHttpRequest();
+            }
+            else{
+                xhr = new ActiveXObject('Microsoft.XMLHTTP');
+            }
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState == 4){
+                    if(xhr.status == 200){
+                        ul1.innerHTML += xhr.responseText;
+                        const father = document.getElementById('ul1');
+                        var num = father.children.length;
+                        num--;
+                        //document.getElementById('num').innerText = (document.getElementById('span22').innerText.split(':')[1].split(' ')[0]);
+                        document.getElementById('num').innerText = ('数据的总数为: ' + num.toString());
+                    }
+                }
+            };
+            xhr.open('get','/html',true);
+            xhr.send();
+        }
+        // POST 数据格式
+        //{
+        //    "result":[
+        //    {"id":0,"main-question1":"1","main-question2":"2"},
+        //    {"id":1,"main-question1":"2","main-question2":"3"}
+        //    ]
+        //}
+        document.getElementById('btn').onclick = function(){
+            const father = document.getElementById('ul1');
+            var num = father.children.length;
+            num--;
+            var result = '{"result":[';
+            for(var i=1;i<=num;i++){
+                var span1 = 'span' + (3*i-2).toString();
+                var input1 = 'input' + (2*i-1).toString();
+                var input2 = 'input' + (2*i).toString();
+                var text1 = document.getElementById(span1).innerText;
+                var text2 = document.getElementById(input1).value;
+                var text3 = document.getElementById(input2).value;
+                result += '{"id":';
+                result += text1.split(':')[1].split(' ')[0];
+                result += ',';
+                result += '"main-question1":"';
+                result += text2;
+                result += '","main-question2":"';
+                result += text3;
+                result += '"}';
+                if(i!=num){
+                    result += ',';
+                }
+            }
+            result += ']}';
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/info", true);
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.setRequestHeader("kbn-version", "5.3.0");
+            xhr.send(JSON.stringify(result));
+            document.getElementById('num').innerText = (result);
+        }
+    </script>
+    <script type="text/javascript" src="./static/javascripts/index.js"></script>
+</body>
+</html>
+
