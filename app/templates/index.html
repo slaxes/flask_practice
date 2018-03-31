@@ -48,21 +48,13 @@
                         father.innerHTML += total;
                         var num = father.children.length;
                         num--;
-                        //document.getElementById('num').innerText = (document.getElementById('span22').innerText.split(':')[1].split(' ')[0]);
                         document.getElementById('num').innerText = ('数据的总数为: ' + num.toString());
                     }
                 }
             };
             xhr.open('get','/info',true);
             xhr.send();
-        }
-        // POST 数据格式
-        //{
-        //    "result":[
-        //    {"id":0,"main_question1":"1","main_question2":"2"},
-        //    {"id":1,"main_question1":"2","main_question2":"3"}
-        //    ]
-        //}
+        };
         document.getElementById('btn').onclick = function(){
             const father = document.getElementById('ul1');
             var num = father.children.length;
@@ -93,6 +85,7 @@
             xhr.setRequestHeader("Content-type", "application/json");
             xhr.setRequestHeader("kbn-version", "5.3.0");
             xhr.send(JSON.stringify(result));
+            alert(result);
         }
     </script>
     <script type="text/javascript" src="./static/javascripts/index.js"></script>

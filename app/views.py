@@ -15,7 +15,7 @@ def index():
 
 @app.route('/info', methods=['GET', 'POST'])
 def info():
-    if request.method =='POST':
+    if request.method == 'POST':
         data = request.get_json()
         json_data = json.loads(data)
         info_post("test1.txt","result.pkl",list(json_data["result"]))
@@ -63,7 +63,7 @@ def info_post(inputfile,resultfile,list_data):
         result = {}
         all_infos = []
         result['all_query'] =len(data_dic(inputfile))
-        for i in range(result['all-query']):
+        for i in range(result['all_query']):
             info = {}
             info['id'] = i
             info['main_question1'] = 4
@@ -98,7 +98,7 @@ def info_post(inputfile,resultfile,list_data):
 
         elif data['main_question1'] == '2':
             if result['info'][data['id']]['main_question1'] == 4:
-                result['test-num'] += 1
+                result['test_num'] += 1
             if result['info'][data['id']]['main_question1'] == 1:
                 result['main_question1_true_num'] -= 1
             if result['test_num'] != 0:
@@ -137,20 +137,6 @@ def info_post(inputfile,resultfile,list_data):
 
     pickle.dump(result,open(resultfile,'wb'))
 
-def load_html(data,id,outhtml):
-    with open(outhtml, 'w', encoding='utf-8') as f:
-        target_matrix = []
-        for x in range(0, len(data)):
-            item = data[x]
-            target_matrix.append(
-            '''
-            <li class="inf-list" name="list" id="inf-list''' + str(x+1) + '''">
-                <span id="span''' + str(3*x+1) + '''" title="name">''' + 'id:' + str(id[x]) + ' ' + item['query'] + ''' </span>
-                <span id="span''' + str(3*x+2) + '''" title="email">''' + item["main-question1"] + '''<input id="input''' + str(2*x+1) + '''" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,'')" style="text-align: center;display:block;width:20px"></span>
-                <span id="span''' + str(3*x+3) + '''" title="phone">''' + item["main-question2"] + '''<input id="input''' + str(2*x+2) + '''" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,'')" style="text-align: center;display:block;width:20px"></span>
-            </li>
-            ''')
-        f.writelines('\n'.join(target_matrix))
 
 def select_data(inputfile,resultfile,size):
     resultfile = os.path.join(APP_STATIC_TXT, resultfile)
