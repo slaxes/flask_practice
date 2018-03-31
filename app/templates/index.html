@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
-
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>贝贝组测试</title>
     <link rel="stylesheet" type="text/css" href="./static/stylesheets/index.css">
 </head>
@@ -31,8 +30,22 @@
             xhr.onreadystatechange = function(){
                 if(xhr.readyState == 4){
                     if(xhr.status == 200){
-                        ul1.innerHTML += xhr.responseText;
+                        //var text = unescape(xhr.responseText.replace(/\\u/g, '%u'));
+                        const text = xhr.responseText;
+                        const js = JSON.parse(text).result;
+                        var total = '';
+                        for(var i=0;i<js.length;i++){
+                            var item = js[i];
+                            var index = JSON.stringify(item.id);
+                            var num = parseInt(index);
+                            total += ('<li class="inf-list" name="list" id="inf-list' + index + '">');
+                            total += ('<span id="span' + (3*num+1).toString() + '" title="name">' + 'id:' + index + ' ' + JSON.stringify(item.query) + '</span>');
+                            total += ('<span id="span' + (3*num+2).toString() + '" title="email">' + JSON.stringify(item.main_question1) + '<input id="input' + (2*num+1).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,"")" style="text-align: center;display:block;width:20px"></span>');
+                            total += ('<span id="span' + (3*num+3).toString() + '" title="phone">' + JSON.stringify(item.main_question2) + '<input id="input' + (2*num+2).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,"")" style="text-align: center;display:block;width:20px"></span>');
+                            total += '</li>';
+                        }
                         const father = document.getElementById('ul1');
+                        father.innerHTML += total;
                         var num = father.children.length;
                         num--;
                         //document.getElementById('num').innerText = (document.getElementById('span22').innerText.split(':')[1].split(' ')[0]);
@@ -40,14 +53,14 @@
                     }
                 }
             };
-            xhr.open('get','/html',true);
+            xhr.open('get','/info',true);
             xhr.send();
         }
         // POST 数据格式
         //{
         //    "result":[
-        //    {"id":0,"main-question1":"1","main-question2":"2"},
-        //    {"id":1,"main-question1":"2","main-question2":"3"}
+        //    {"id":0,"main_question1":"1","main_question2":"2"},
+        //    {"id":1,"main_question1":"2","main_question2":"3"}
         //    ]
         //}
         document.getElementById('btn').onclick = function(){
@@ -65,9 +78,9 @@
                 result += '{"id":';
                 result += text1.split(':')[1].split(' ')[0];
                 result += ',';
-                result += '"main-question1":"';
+                result += '"main_question1":"';
                 result += text2;
-                result += '","main-question2":"';
+                result += '","main_question2":"';
                 result += text3;
                 result += '"}';
                 if(i!=num){
@@ -80,7 +93,6 @@
             xhr.setRequestHeader("Content-type", "application/json");
             xhr.setRequestHeader("kbn-version", "5.3.0");
             xhr.send(JSON.stringify(result));
-            document.getElementById('num').innerText = (result);
         }
     </script>
     <script type="text/javascript" src="./static/javascripts/index.js"></script>

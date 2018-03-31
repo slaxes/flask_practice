@@ -5,27 +5,38 @@ import os
 import pickle
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_STATIC_TXT = os.path.join(APP_ROOT, 'static/data')
+APP_TEMPLATE = os.path.join(APP_ROOT,'templates')
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template("index.html",name = "index")
 
-@app.route('/html', methods=['GET', 'POST'])
-def src():
-    return render_template("src.html",name = "src")
 
 @app.route('/info', methods=['GET', 'POST'])
 def info():
     if request.method =='POST':
-        data = request.data
-        info_post("test1.txt","result.pkl",data)
+        data = request.get_json()
+        json_data = json.loads(data)
+        info_post("test1.txt","result.pkl",list(json_data["result"]))
+        result_path = os.path.join(APP_STATIC_TXT,'result.pkl')
+        if not os.path.exists(result_path):
+            return json.dumps({"main_question1_acc": 0.0, "main_question2_acc": 0.0})
+        result = pickle.load(open(result_path, 'rb'))
+        return json.dumps(
+            {"main_question1_acc": result['main_question1_acc'], "main_question2_acc": result['main_question2_acc']})
     else:
         return json.dumps({"result":data_dic('test1.txt')})
 
+
 @app.route('/result', methods=['GET'])
 def result():
-    result = pickle.load(open('result.pkl','rb'))
-    return json.dumps({"main-question1-acc":result['main-question1-acc'],"main-question2-acc":result['main-question2-acc'] })
+    result_path = os.path.join(APP_STATIC_TXT, 'result.pkl')
+    if not os.path.exists(result_path):
+        return json.dumps({"main_question1_acc":0.0 ,"main_question2_acc":0.0 })
+    result = pickle.load(open(result_path,'rb'))
+    return json.dumps({"main_question1_acc":result['main_question1_acc'],"main_question2_acc":result['main_question2_acc'] })
+
 
 def data_dic(mainfile):
     f = open(os.path.join(APP_STATIC_TXT, mainfile),'r')
@@ -37,80 +48,122 @@ def data_dic(mainfile):
         mainques2 = line.strip('\n').split("||")[2]
         list_dic = {}
         list_dic["query"] = query
-        list_dic["main-question1"] = mainques1
-        list_dic["main-question2"] = mainques2
+        list_dic["main_question1"] = mainques1
+        list_dic["main_question2"] = mainques2
         list_dic["id"] = i
         result.append(list_dic)
         i += 1
     f.close()
     return result
 
-def info_post(inputfile,resultfile,data):
+
+def info_post(inputfile,resultfile,list_data):
+    resultfile = os.path.join(APP_STATIC_TXT,resultfile)
     if not os.path.exists(resultfile):
         result = {}
         all_infos = []
-        result['all-query'] =len(data_dic(inputfile))
+        result['all_query'] =len(data_dic(inputfile))
         for i in range(result['all-query']):
             info = {}
             info['id'] = i
-            info['main-question1'] = 4
-            info['main-question2'] = 4
+            info['main_question1'] = 4
+            info['main_question2'] = 4
             all_infos.append(info)
         result['info'] = all_infos
-        result['main-question1-acc'] = 0.0
-        result['main-question2-acc'] = 0.0
-        result['main-question1-true-num'] = 0
-        result['main-question2-true-num'] = 0
-        result['test-num'] = 0
+        result['main_question1_acc'] = 0.0
+        result['main_question2_acc'] = 0.0
+        result['main_question1_true_num'] = 0
+        result['main_question2_true_num'] = 0
+        result['test_num'] = 0
         pickle.dump(result,open(resultfile,'wb'))
 
-    result = pickle.load(open(resultfile,'rb'))
-    if data['main-question1'] == 1:
-        if result['info'][data['id']]['main-question1'] == 4:
-            result['main-question1-true-num'] += 1
-            result['test-num'] += 1
-        elif result['info'][data['id']]['main-question1'] != 1:
-            result['main-question1-true-num'] += 1
-        result['main-question1-acc'] = result['main-question1-true-num']*1.0 / result['all-query']
+    f = open(resultfile,'rb')
+    result = pickle.load(f)
+    f.close()
 
-    elif data['main-question1'] == 2:
-        if result['info'][data['id']]['main-question1'] == 4:
-            result['test-num'] += 1
-        if result['info'][data['id']]['main-question1'] == 1:
-            result['main-question1-true-num'] -= 1
-        result['main-question1-acc'] = result['main-question1-true-num']*1.0 / result['all-query']
+    for data in list_data:
+        if data["main_question1"] == "":
+            continue
+        if data["main_question2"] == "":
+            continue
 
-    elif data['main-question1'] == 3:
-        if result['info'][data['id']]['main-question1'] == 4:
-            result['test-num'] += 1
-        if result['info'][data['id']]['main-question1'] == 1:
-            result['main-question1-true-num'] -= 1
-        result['main-question1-acc'] = result['main-question1-true-num']*1.0 / result['all-query']
+        if data['main_question1'] == '1':
+            if result['info'][data['id']]['main_question1'] == 4:
+                result['main_question1_true_num'] += 1
+                result['test_num'] += 1
+            elif result['info'][data['id']]['main_question1'] != 1:
+                result['main_question1_true_num'] += 1
+            if result['test_num'] != 0:
+                result['main_question1_acc'] = result['main_question1_true_num'] * 1.0 / result['test_num']
 
-    if data['main-question2'] == 1:
-        if result['info'][data['id']]['main-question2'] == 4:
-            result['main-question2-true-num'] += 1
-            result['test-num'] += 1
-        elif result['info'][data['id']]['main-question2'] != 1:
-            result['main-question2-true-num'] += 1
-        result['main-question2-acc'] = result['main-question2-true-num'] * 1.0 / result['all-query']
+        elif data['main_question1'] == '2':
+            if result['info'][data['id']]['main_question1'] == 4:
+                result['test-num'] += 1
+            if result['info'][data['id']]['main_question1'] == 1:
+                result['main_question1_true_num'] -= 1
+            if result['test_num'] != 0:
+                result['main_question1_acc'] = result['main_question1_true_num'] * 1.0 / result['test_num']
 
-    elif data['main-question2'] == 2:
-        if result['info'][data['id']]['main-question2'] == 4:
-            result['test-num'] += 1
-        if result['info'][data['id']]['main-question1'] == 1:
-            result['main-question2-true-num'] -= 1
-        result['main-question2-acc'] = result['main-question2-true-num'] * 1.0 / result['all-query']
+        elif data['main_question1'] == '3':
+            if result['info'][data['id']]['main_question1'] == 4:
+                result['test_num'] += 1
+            if result['info'][data['id']]['main_question1'] == 1:
+                result['main_question1_true_num'] -= 1
+            if result['test_num'] != 0:
+                result['main_question1_acc'] = result['main_question1_true_num'] * 1.0 / result['test_num']
 
-    elif data['main-question1'] == 3:
-        if result['info'][data['id']]['main-question2'] == 4:
-            result['test-num'] += 1
-        if result['info'][data['id']]['main-question2'] == 1:
-            result['main-question2-true-num'] -= 1
-        result['main-question2-acc'] = result['main-question2-true-num'] * 1.0 / result['all-query']
+        if data['main_question2'] == '1':
+            if result['info'][data['id']]['main_question2'] == 4:
+                result['main_question2_true_num'] += 1
+            elif result['info'][data['id']]['main_question2'] != 1:
+                result['main_question2_true_num'] += 1
+            if result['test_num'] != 0:
+                result['main_question2_acc'] = result['main_question2_true_num'] * 1.0 / result['test_num']
 
-    result['info'][data['id']]['main-question1'] = data['main-question1']
-    result['info'][data['id']]['main-question2'] = data['main-question2']
+        elif data['main_question2'] == '2':
+            if result['info'][data['id']]['main_question1'] == 1:
+                result['main_question2_true_num'] -= 1
+            if result['test_num'] != 0:
+                result['main_question2_acc'] = result['main_question2_true_num'] * 1.0 / result['test_num']
+
+        elif data['main_question1'] == '3':
+            if result['info'][data['id']]['main_question2'] == 1:
+                result['main_question2_true_num'] -= 1
+            if result['test_num'] != 0:
+                result['main_question2_acc'] = result['main_question2_true_num'] * 1.0 / result['test_num']
+
+        result['info'][data['id']]['main_question1'] = int(data['main_question1'])
+        result['info'][data['id']]['main_question2'] = int(data['main_question2'])
+
     pickle.dump(result,open(resultfile,'wb'))
 
+def load_html(data,id,outhtml):
+    with open(outhtml, 'w', encoding='utf-8') as f:
+        target_matrix = []
+        for x in range(0, len(data)):
+            item = data[x]
+            target_matrix.append(
+            '''
+            <li class="inf-list" name="list" id="inf-list''' + str(x+1) + '''">
+                <span id="span''' + str(3*x+1) + '''" title="name">''' + 'id:' + str(id[x]) + ' ' + item['query'] + ''' </span>
+                <span id="span''' + str(3*x+2) + '''" title="email">''' + item["main-question1"] + '''<input id="input''' + str(2*x+1) + '''" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,'')" style="text-align: center;display:block;width:20px"></span>
+                <span id="span''' + str(3*x+3) + '''" title="phone">''' + item["main-question2"] + '''<input id="input''' + str(2*x+2) + '''" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,'')" style="text-align: center;display:block;width:20px"></span>
+            </li>
+            ''')
+        f.writelines('\n'.join(target_matrix))
 
+def select_data(inputfile,resultfile,size):
+    resultfile = os.path.join(APP_STATIC_TXT, resultfile)
+    data_all = data_dic(inputfile)
+    resultdatas = pickle.load(open(resultfile,'rb'))['info']
+    id = []
+    return_data = []
+    i = 0
+    for resultdata in resultdatas:
+        if resultdata['main_question1'] == 4:
+            return_data.append(data_all[resultdata['id']])
+            id.append(resultdata['id'])
+            i += 1
+            if i == size:
+                break
+    return return_data,id
