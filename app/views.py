@@ -26,6 +26,24 @@ def info():
         return json.dumps(
             {"main_question1_acc": result['main_question1_acc'], "main_question2_acc": result['main_question2_acc']})
     else:
+        resultfile = os.path.join(APP_STATIC_TXT, 'result.pkl')
+        if not os.path.exists(resultfile):
+            result = {}
+            all_infos = []
+            result['all_query'] = len(data_dic('test1.txt'))
+            for i in range(result['all_query']):
+                info = {}
+                info['id'] = i
+                info['main_question1'] = 4
+                info['main_question2'] = 4
+                all_infos.append(info)
+            result['info'] = all_infos
+            result['main_question1_acc'] = 0.0
+            result['main_question2_acc'] = 0.0
+            result['main_question1_true_num'] = 0
+            result['main_question2_true_num'] = 0
+            result['test_num'] = 0
+            pickle.dump(result, open(resultfile, 'wb'))
         data_,id = select_data("test1.txt","result.pkl",60)
         return json.dumps({"result":data_})
 
