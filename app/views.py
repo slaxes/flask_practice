@@ -26,7 +26,8 @@ def info():
         return json.dumps(
             {"main_question1_acc": result['main_question1_acc'], "main_question2_acc": result['main_question2_acc']})
     else:
-        return json.dumps({"result":data_dic('test1.txt')})
+        data_,id = select_data("test1.txt","result.pkl",60)
+        return json.dumps({"result":data_})
 
 
 @app.route('/result', methods=['GET'])

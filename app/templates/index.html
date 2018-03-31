@@ -39,9 +39,9 @@
                             var index = JSON.stringify(item.id);
                             var num = parseInt(index);
                             total += ('<li class="inf-list" name="list" id="inf-list' + index + '">');
-                            total += ('<span id="span' + (3*num+1).toString() + '" title="name">' + 'id:' + index + ' ' + JSON.stringify(item.query) + '</span>');
-                            total += ('<span id="span' + (3*num+2).toString() + '" title="email">' + JSON.stringify(item.main_question1) + '<input id="input' + (2*num+1).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,"")" style="text-align: center;display:block;width:20px"></span>');
-                            total += ('<span id="span' + (3*num+3).toString() + '" title="phone">' + JSON.stringify(item.main_question2) + '<input id="input' + (2*num+2).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=value.replace(/[^\d]/g,"")" style="text-align: center;display:block;width:20px"></span>');
+                            total += ('<span id="span' + (3*i+1).toString() + '" title="name">' + 'id:' + index + ' ' + JSON.stringify(item.query) + '</span>');
+                            total += ('<span id="span' + (3*i+2).toString() + '" title="email">' + JSON.stringify(item.main_question1) + '<input id="input' + (2*i+1).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=' + "value.replace(/[^1-3]/g,'')" + '"style="text-align: center;display:block;width:20px"></span>');
+                            total += ('<span id="span' + (3*i+3).toString() + '" title="phone">' + JSON.stringify(item.main_question2) + '<input id="input' + (2*i+2).toString() + '" type="text" maxlength="1" size="2" onkeyup="value=' + "value.replace(/[^1-3]/g,'')" + '"style="text-align: center;display:block;width:20px"></span>');
                             total += '</li>';
                         }
                         const father = document.getElementById('ul1');
@@ -86,6 +86,7 @@
             xhr.setRequestHeader("kbn-version", "5.3.0");
             xhr.send(JSON.stringify(result));
             alert(result);
+            location.reload();
         }
     </script>
     <script type="text/javascript" src="./static/javascripts/index.js"></script>
